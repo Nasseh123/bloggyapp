@@ -12,4 +12,13 @@
 {% block content %}
 
 <p>{{message}}</p>
+<a class="ratings" href="/user/blog/new/{{user.id}}"> Write a new Blog</a>
+
+    {% for blog in blogs %}
+   <ul>
+       <li>{{blog.title}}</li>
+   </ul>
+    {% endfor %}
+
+
 {% endblock%}

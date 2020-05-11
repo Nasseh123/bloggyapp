@@ -1,27 +1,28 @@
 from flask import render_template,request,redirect,url_for,abort
 from .import main
-from flask_login import login_required
-from .forms import UpdateProfile
-from ..import db
-from ..models import User
+from flask_login import login_required,current_user
+from .forms import UpdateProfile,BlogForm
+from ..import db,photos
+from ..models import User,Blog
 @main.route('/')
 @login_required
 def index():
     """
     """
-
+    user=current_user
+    blogs=Blog.get_all_blog()
     title="Blog App"
     message="Welcome to blog app"
-    return render_template('index.html',title=title,message=message)
+    return render_template('index.html',title=title,message=message,user=user,blogs=blogs)
 
 @main.route('/user/<uname>')
 def profile(uname):
     user = User.query.filter_by(username = uname).first()
-
+    blogs=Blog.query.filter_by(user_id=user.id).all()
     if user is None:
         abort(404)
 
-    return render_template("profile/profile.html", user = user)
+    return render_template("profile/profile.html", user = user,blogs=blogs)
 
 @main.route('/user/<uname>/update',methods = ['GET','POST'])
 @login_required
@@ -41,3 +42,34 @@ def update_profile(uname):
         return redirect(url_for('.profile',uname=user.username))
 
     return render_template('profile/update.html',form =form)
+
+@main.route('/user/<uname>/update/pic',methods= ['POST'])
+@login_required
+def update_pic(uname):
+    user = User.query.filter_by(username = uname).first()
+    if 'photo' in request.files:
+        filename = photos.save(request.files['photo'])
+        path = f'photos/{filename}'
+        user.profile_pic_path = path
+        db.session.commit()
+    return redirect(url_for('main.profile',uname=uname))
+
+@main.route('/user/blog/new/<int:id>', methods = ['GET','POST'])
+@login_required
+def new_review(id):
+    form = BlogForm()
+    user=User.get_user(id)
+    
+    if form.validate_on_submit():
+        title = form.title.data
+        description = form.description.data
+
+        # Updated review instance
+        new_blog = Blog(title=title,description=description,user_id=user.id)
+
+        # save review method
+        new_blog.save_blog()
+        return redirect(url_for('.index'))
+
+    title = 'New Blog '
+    return render_template('new_blog.html',title = title, form=form,user=user )
