@@ -1,9 +1,9 @@
 from flask import render_template,request,redirect,url_for,abort
 from .import main
 from flask_login import login_required,current_user
-from .forms import UpdateProfile,BlogForm
+from .forms import UpdateProfile,BlogForm,CommentForm
 from ..import db,photos
-from ..models import User,Blog
+from ..models import User,Blog,Comments
 @main.route('/')
 @login_required
 def index():
@@ -11,6 +11,8 @@ def index():
     """
     user=current_user
     blogs=Blog.get_all_blog()
+    # blog=Blog.query.filter_by(user_id=current_user.id).all()
+    # specific_blog=Blog.query.filter_by(id=blog.id).first()
     title="Blog App"
     message="Welcome to blog app"
     return render_template('index.html',title=title,message=message,user=user,blogs=blogs)
@@ -73,3 +75,47 @@ def new_review(id):
 
     title = 'New Blog '
     return render_template('new_blog.html',title = title, form=form,user=user )
+
+@main.route('/user/blog/newcomment/<int:id>', methods = ['GET','POST'])
+@login_required
+def new_comment(id):
+    form = CommentForm()
+    user=current_user
+    blog=Blog.query.filter_by(id=id).first()
+    if form.validate_on_submit():
+        comment = form.comment.data 
+
+        # Updated review instance
+        new_comment = Comments(comment=comment,blog_id=blog.id,user_id=user.id)
+
+        # save review method
+        new_comment.save_comment()
+        return redirect(url_for('.blog',id=id))
+
+    title = 'New Blog '
+    return render_template('new_comment.html',title = title, form=form,user=user )
+
+
+@main.route('/blog/<int:id>')
+def blog(id):
+
+    '''
+    View movie page function that returns the movie details page and its data
+    '''
+    form = CommentForm()
+    user=current_user
+    blog = Blog.query.filter_by(id=id).first()
+    if form.validate_on_submit():
+        comment = form.comment.data 
+
+        # Updated review instance
+        new_comment = Comments(comment=comment,blog_id=blog.id,user_id=user.id)
+
+        # save review method
+        new_comment.save_comment()
+        return redirect(url_for('.blog'))
+
+    comments=Comments.query.filter_by(blog_id=id).all()
+    title = f'{blog.title}'
+    return render_template('blog.html',title = title,blog=blog,comments=comments,form=form)
+

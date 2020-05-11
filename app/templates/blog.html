@@ -1,0 +1,27 @@
+{% import "bootstrap/wtf.html" as wtf %}
+<title>{{title}}</title>
+{% extends 'base.html'%}
+{% block content %}
+
+<h2 style="text-align: center;"><u>{{blog.title}}</u></h2>
+<p style="text-align: center;">{{blog.description}}</p>
+<hr>
+<a class="ratings" href="/user/blog/newcomment/{{blog.id}}"> Comment!</a>
+<div class="col-md-4">
+    {%if comments%}
+    {% for comment in comments %}
+    <ul>
+      <li>{{comment.comment}}</li>
+      <a href="">DELETE comment</a>
+    </ul>
+    {% endfor %}
+    {%else%}
+    <p>There are no comments yet for this blog..</p>
+    
+    {% endif %}  
+</div>
+<div class="col-md-4">
+    {{ wtf.quick_form(form) }}
+</div>
+
+{% endblock%}
