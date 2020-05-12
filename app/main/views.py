@@ -4,13 +4,15 @@ from flask_login import login_required,current_user
 from .forms import UpdateProfile,BlogForm,CommentForm
 from ..import db,photos
 from ..models import User,Blog,Comments
+from ..email import mail_message
 @main.route('/')
-@login_required
+
 def index():
     """
     """
     user=current_user
     blogs=Blog.get_all_blog()
+    
     # blog=Blog.query.filter_by(user_id=current_user.id).all()
     # specific_blog=Blog.query.filter_by(id=blog.id).first()
     title="Blog App"
@@ -61,13 +63,15 @@ def update_pic(uname):
 def new_review(id):
     form = BlogForm()
     user=User.get_user(id)
-    
+    # users=User.get_all_users()
+
     if form.validate_on_submit():
         title = form.title.data
         description = form.description.data
 
         # Updated review instance
         new_blog = Blog(title=title,description=description,user_id=user.id)
+        mail_message(f"Hello {user.username} You Just Made a post!","email/subscription_new_blog",user.email,user=user)
 
         # save review method
         new_blog.save_blog()
@@ -96,7 +100,7 @@ def new_comment(id):
     return render_template('new_comment.html',title = title, form=form,user=user )
 
 
-@main.route('/blog/<int:id>')
+@main.route('/blog/<int:id>',methods=['GET','POST'])
 def blog(id):
 
     '''
@@ -105,6 +109,7 @@ def blog(id):
     form = CommentForm()
     user=current_user
     blog = Blog.query.filter_by(id=id).first()
+    
     if form.validate_on_submit():
         comment = form.comment.data 
 
@@ -113,9 +118,20 @@ def blog(id):
 
         # save review method
         new_comment.save_comment()
-        return redirect(url_for('.blog'))
-
-    comments=Comments.query.filter_by(blog_id=id).all()
+        return redirect(url_for('.blog',id=id))
+    
+    # comments=Comments.query.filter_by(blog_id=id).all()
+    
     title = f'{blog.title}'
-    return render_template('blog.html',title = title,blog=blog,comments=comments,form=form)
+    return render_template('blog.html',title = title,blog=blog,form=form)
 
+@main.route('/comment/delete/<int:id>')
+def delete_comment(id):
+    """
+    """
+    form=BlogForm()
+    get_comment=Comments.query.filter_by(id=id).first()
+
+    comment=Comments.delete_comment(get_comment.id)
+
+    return redirect(url_for('blog.html',id=get_comment.blog_id,form=form))

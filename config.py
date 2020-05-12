@@ -4,7 +4,7 @@ class Config:
 
     SECRET_KEY=os.environ.get('SECRET_KEY')
     UPLOADED_PHOTOS_DEST ='app/static/photos'
-    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://manasseh:beast@localhost/blog'
+    
 
     # email configurations
     MAIL_SERVER = 'smtp.googlemail.com'
@@ -13,8 +13,9 @@ class Config:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
 class ProdConfig(Config):
-    pass
+   SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://manasseh:beast@localhost/blog'
 class DevConfig(Config):
+    
     DEBUG=True
 
 config_options={

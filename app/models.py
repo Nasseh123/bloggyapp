@@ -15,6 +15,7 @@ class User(UserMixin,db.Model):
     role_id=db.Column(db.Integer,db.ForeignKey('roles.id'))
     bio = db.Column(db.String(255))
     profile_pic_path = db.Column(db.String())
+    subscription=db.Column(db.String(255),unique = True,index = True)
     pass_secure = db.Column(db.String(255))
     blog=db.relationship('Blog',backref='user',lazy="dynamic")
     comments=db.relationship('Comments',backref='user',lazy="dynamic")
@@ -35,7 +36,9 @@ class User(UserMixin,db.Model):
     def get_user(cls,id):
         user=User.query.filter_by(id=id).first()
         return user
-
+    def get_all_users():
+        users=User.query.filter_by(subscription==True).all()
+        return users
         
     def __repr__(self):
         return f'user {self.username}'
@@ -82,8 +85,11 @@ class Comments(db.Model):
     def save_comment(self):
         db.session.add(self)
         db.session.commit()
-    
-    
-    
+
+    @classmethod
+    def delete_comment(cls,id):
+        comment=Comments.query.filter_by(id=id).delete()
+        
+
     def __repr__(self):
         return f'user {self.id}'
