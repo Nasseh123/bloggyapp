@@ -126,6 +126,7 @@ def blog(id):
     return render_template('blog.html',title = title,blog=blog,form=form)
 
 @main.route('/comment/delete/<int:id>')
+@login_required
 def delete_comment(id):
     """
     """
