@@ -118,7 +118,7 @@ def blog(id):
 
         # save review method
         new_comment.save_comment()
-        return redirect(url_for('.blog',id=id))
+        return redirect(url_for('main.blog',id=id))
     
     # comments=Comments.query.filter_by(blog_id=id).all()
     
